@@ -10,15 +10,40 @@ import GameplayKit
 
 final class GameScene: SKScene {
 
-	var timer: Timer?
-	var road: Road?
+	// MARK: - Timers
+	private var roadTimer: Timer?
 
+	// MARK: - Properties
+	private var configuration = GameConfigurator.shared
+
+	// MARK: - Lifecycle
     override func didMove(to view: SKView) {
-		timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-			self?.road?.removeFromParent()
-			let newRoad = Road()
-			self?.road = newRoad
-			self?.addChild(newRoad)
-		}
+		startGame()
     }
+
+	// MARK: - Game States
+	private func startGame() {
+		roadTimerTick()
+	}
+
+	// MARK: - Roads
+	@objc private func roadTimerTick() {
+		spawnRoad()
+		restartRoadsTimer()
+	}
+
+	private func spawnRoad() {
+		let newRoad = Road()
+		addChild(newRoad)
+		newRoad.activate(gameSpeed: configuration.gameSpeed)
+	}
+
+	private func restartRoadsTimer() {
+		roadTimer?.invalidate()
+		roadTimer = Timer.scheduledTimer(timeInterval: configuration.roadSpawnInterval,
+										 target: self,
+										 selector: #selector(roadTimerTick),
+										 userInfo: nil,
+										 repeats: false)
+	}
 }
